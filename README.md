@@ -18,6 +18,11 @@ Verifying the private-public keypair:
 ```sh
 openssl pkey -in key.pem -text -pubout -check
 ```
+`-text` option can be added at the end to print the key components in plaintext form, for example:
+![image](https://github.com/user-attachments/assets/2b74520d-cb84-4b43-90ae-50c9d6e41df2)
+
+`-noout` can be used to prevent openssl from printing the encoded form of the key.
+
 **3. Generating a self-signed certificate in a single command:**
 ```sh
 openssl req -x509 -newkey mldsa65 -keyout server.key -out server.crt -days 365 -nodes
@@ -62,7 +67,9 @@ openssl rand -engine rdrand -hex -num 32
 Other than `-hex`, `-base64` can also be used.
 
 **8. Listing providers:**
-```openssl list -providers -verbose```
+```sh
+openssl list -providers -verbose
+```
 Provider's capabilities:
 ```openssl list -providers -kem-algorithms -key-exchange-algorithms -signature-algorithms```
 
