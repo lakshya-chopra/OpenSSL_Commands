@@ -25,8 +25,7 @@ openssl req -x509 -newkey mldsa65 -keyout server.key -out server.crt -days 365 -
 `-nodes` can be used to prevent passphrase based encryption of the private key. Else ciphering algorithms such as `-aes256`, `chacha20` can be specified.
 
 **4. Generating certificates via Private CA & CSRs**:
-```sh
-bash 
+```sh 
 # Generating CA 
 openssl req -x509 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 3650 -nodes
 
@@ -62,7 +61,12 @@ openssl rand -engine rdrand -hex -num 32
 ```
 Other than `-hex`, `-base64` can also be used.
 
-**8. s_client:**
+**8. Listing providers:**
+```openssl list -providers -verbose```
+Provider's capabilities:
+```openssl list -providers -kem-algorithms -key-exchange-algorithms -signature-algorithms```
+
+**9. s_client:**
 Connecting to a remote host:
 ```sh
 openssl s_client -connect google.com:443 -security_debug_verbose -msg -debug -state -status
