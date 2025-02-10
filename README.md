@@ -12,11 +12,27 @@ DER to PEM:
 ```sh
 openssl pkey -inform DER -in key.der -outform PEM -out key.pem
 ```
-More
+More:
 ```sh
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out ec_private.pem
 openssl ec -in ec_private.pem -pubout -out ec_public.pem
 ```
+```sh
+openssl ecparam -list_curves   
+openssl ecparam -name secp256k1 -text #View curve parameters
+openssl ecparam -name prime256v1 -genkey -noout -out ec_private.pem
+```
+`ecparam` can also be used to generate Elliptic curve keys by specifiying curve parameters
+
+RSA:
+```sh
+openssl genpkey -algorithm RSA -aes-256-cbc -out rsa_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
+openssl rsa -in rsa_private.pem -text
+```
+![image](https://github.com/user-attachments/assets/1961f670-c1e2-40ab-939d-5476406cf5a8)
+
+
 Read more pkeyopts [here](https://docs.openssl.org/3.4/man1/openssl-genpkey/#dsa-parameter-generation-options)
 
 Other supported algorithms can be listed via: `openssl list -key-exchange-algorithms -signature-algorithms`
