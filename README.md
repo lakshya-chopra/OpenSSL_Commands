@@ -4,6 +4,21 @@
 ```sh
 openssl genpkey -algorithm ed25519 -out key.pem
 ```
+Extract pubkey:
+```sh
+openssl pkey -in key.pem -pubout -out pubkey.pem
+```
+DER to PEM:
+```sh
+openssl pkey -inform DER -in key.der -outform PEM -out key.pem
+```
+More
+```sh
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out ec_private.pem
+openssl ec -in ec_private.pem -pubout -out ec_public.pem
+```
+Read more pkeyopts [here](https://docs.openssl.org/3.4/man1/openssl-genpkey/#dsa-parameter-generation-options)
+
 Other supported algorithms can be listed via: `openssl list -key-exchange-algorithms -signature-algorithms`
 
 **2. Viewing the key:**
@@ -32,7 +47,7 @@ openssl req -x509 -newkey mldsa65 -keyout server.key -out server.crt -days 365 -
 **4. Generating certificates via Private CA & CSRs**:
 ```sh 
 # Generating CA 
-openssl req -x509 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 3650 -nodes
+openssl req -x509 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 3650 -subj "/CN=test CA" -nodes
 
 # Viewing CA cert
 openssl x509 -in ca.crt -text -noout 
@@ -66,12 +81,17 @@ openssl rand -engine rdrand -hex -num 32
 ```
 Other than `-hex`, `-base64` can also be used.
 
-**8. Listing providers:**
+**8. Listing:**
+- Providers
 ```sh
 openssl list -providers -verbose
 ```
 Provider's capabilities:
 ```openssl list -providers -kem-algorithms -key-exchange-algorithms -signature-algorithms```
+- Algorithms:
+```sh
+openssl list -kem-algorithms -signature-algorithms -key-managers -public-key-algorithms -asymcipher-algorithms -key-exchange-algorithms -digest-algorithms -kdf-algorithms -mac-algorithms -cipher-algorithms
+``` 
 
 **9. s_client:**
 Connecting to a remote host:
@@ -79,3 +99,23 @@ Connecting to a remote host:
 openssl s_client -connect google.com:443 -security_debug_verbose -msg -debug -state -status
 ```
 Protocols can be specified as well, for example: `-tls1_1`,`-tls1_3`, `-dtls1_2`
+
+**10. s_server:**
+Starting a `DTLS 1.2` server
+```sh
+openssl s_server -cert srv.crt -key srv.key -dtls1_2
+```
+**11. Verify a Certificate Against a CA**
+```sh
+openssl verify -CAfile ca-cert.pem cert.pem
+```
+
+**12. View speed:**
+Parallel:
+```sh
+openssl speed -seconds 5 -multi <cores> ed25519 ecdsa rsa3072 ed448
+```
+Single core:
+```sh
+openssl speed -seconds 5 ed25519 ecdsa rsa3072 ed448
+```
