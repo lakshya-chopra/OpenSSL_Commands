@@ -135,3 +135,8 @@ Single core:
 ```sh
 openssl speed -seconds 5 ed25519 ecdsa rsa3072 ed448
 ```
+
+**13. Generate self-signed certificate:**
+```sh
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+```
