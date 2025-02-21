@@ -57,6 +57,7 @@ openssl pkey -in key.pem -text -pubout -check
 **3. Generating a self-signed certificate in a single command:**
 ```sh
 openssl req -x509 -newkey mldsa65 -keyout server.key -out server.crt -days 365 -nodes
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
 ```
 `-nodes` can be used to prevent passphrase based encryption of the private key. Else ciphering algorithms such as `-aes256`, `chacha20` can be specified.
 
@@ -135,8 +136,7 @@ Single core:
 ```sh
 openssl speed -seconds 5 ed25519 ecdsa rsa3072 ed448
 ```
-
-**13. Generate self-signed certificate:**
+13. Verify certificate:
 ```sh
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+openssl verify -CAfile ca.crt server.crt
 ```
