@@ -1,18 +1,19 @@
 # List of a few handy OpenSSL commands:
 
-**1. Key generation:**
+### Key operations
+- Key generation
 ```sh
 openssl genpkey -algorithm ed25519 -out key.pem
 ```
-Extract pubkey:
+- Extract pubkey:
 ```sh
 openssl pkey -in key.pem -pubout -out pubkey.pem
 ```
-DER to PEM:
+- DER to PEM:
 ```sh
 openssl pkey -inform DER -in key.der -outform PEM -out key.pem
 ```
-More:
+- Bonus:
 ```sh
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out ec_private.pem
 openssl ec -in ec_private.pem -pubout -out ec_public.pem
@@ -24,28 +25,44 @@ openssl ecparam -name prime256v1 -genkey -noout -out ec_private.pem
 ```
 `ecparam` can also be used to generate Elliptic curve keys by specifiying curve parameters
 
-RSA:
+- RSA specific:
 ```sh
 openssl genpkey -algorithm RSA -aes-256-cbc -out rsa_private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
 openssl rsa -in rsa_private.pem -text
 ```
+Sample:
+
 ![image](https://github.com/user-attachments/assets/1961f670-c1e2-40ab-939d-5476406cf5a8)
 
+- **Example options**
+  1. RSA
+  ```
+  rsa_keygen_bits:4096
+  rsa_keygen_pubexp:65537
+  ```
+  2. RSA-PSS (`rsassaPss`)
+  ```
+  rsa_pss_keygen_md:sha256
+  rsa_pss_keygen_mgf1_md:sha256
+  rsa_pss_keygen_saltlen:32
+  ```
+  3. ECDSA
+  ```md
+  ec_paramgen_curve:<curve_name>
+  ```
 
-Read more pkeyopts [here](https://docs.openssl.org/3.4/man1/openssl-genpkey/#dsa-parameter-generation-options)
+> Note: Other supported algorithms can be listed via: `openssl list -key-exchange-algorithms -signature-algorithms`
 
-Other supported algorithms can be listed via: `openssl list -key-exchange-algorithms -signature-algorithms`
-
-**2. Viewing the key:**
+- Viewing the key
 ```sh
 openssl pkey -in key.pem -text
 ```
-Printing only the public key:
+- Printing only the public key:
 ```sh
 openssl pkey -in key.pem -text -pubout
 ```
-Verifying the private-public keypair:
+- Verifying the private-public keypair:
 ```sh
 openssl pkey -in key.pem -text -pubout -check
 ```
@@ -54,14 +71,14 @@ openssl pkey -in key.pem -text -pubout -check
 
 `-noout` can be used to prevent openssl from printing the encoded form of the key.
 
-**3. Generating a self-signed certificate in a single command:**
+### Generating a self-signed certificate in a single command
 ```sh
 openssl req -x509 -newkey mldsa65 -keyout server.key -out server.crt -days 365 -nodes
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
 ```
 `-nodes` can be used to prevent passphrase based encryption of the private key. Else ciphering algorithms such as `-aes256`, `chacha20` can be specified.
 
-**4. Generating certificates via Private CA & CSRs**:
+### Generating certificates via Private CA & CSRs
 ```sh 
 # Generating CA 
 openssl req -x509 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 3650 -subj "/CN=test CA" -nodes
@@ -78,17 +95,17 @@ openssl req -new -key server.key -out server.csr
 # Signing CSR
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365
 ```
-**5. Verifying the CSR**:
+### Verifying the CSR
 ```sh
 openssl req -in server.csr -noout -verify -text
 ```
-**6.Verify whether the public key in the certificate matches with the corresponding private key:**
+### Verify whether the public key in the certificate matches with the corresponding private key
 ```sh
 openssl x509 -in server.crt -pubkey -noout > pubkey.pem 
 openssl pkey -in server.key -pubout -out privkey_pub.pem 
 diff pubkey.pem privkey_pub.pem
 ```
-**7. Random number generation:**
+### Random number generation
 ```sh
 openssl rand -hex -num 32
 ```
@@ -98,7 +115,7 @@ openssl rand -engine rdrand -hex -num 32
 ```
 Other than `-hex`, `-base64` can also be used.
 
-**8. Listing:**
+### Listing
 - Providers
 ```sh
 openssl list -providers -verbose
@@ -107,36 +124,42 @@ Provider's capabilities:
 ```openssl list -providers -kem-algorithms -key-exchange-algorithms -signature-algorithms```
 - Algorithms:
 ```sh
-openssl list -kem-algorithms -signature-algorithms -key-managers -public-key-algorithms -asymcipher-algorithms -key-exchange-algorithms -digest-algorithms -kdf-algorithms -mac-algorithms -cipher-algorithms
+openssl list -kem-algorithms -signature-algorithms -key-managers -public-key-algorithms \
+-asymcipher-algorithms -key-exchange-algorithms -digest-algorithms -kdf-algorithms \
+-mac-algorithms -cipher-algorithms
 ``` 
 
-**9. s_client:**
-Connecting to a remote host:
+### TLS connection: s_client and s_server
+- Connecting to a remote host:
 ```sh
 openssl s_client -connect google.com:443 -security_debug_verbose -msg -debug -state -status
 ```
 Protocols can be specified as well, for example: `-tls1_1`,`-tls1_3`, `-dtls1_2`
 
-**10. s_server:**
-Starting a `DTLS 1.2` server
+- Starting a `DTLS 1.2` server
 ```sh
 openssl s_server -cert srv.crt -key srv.key -dtls1_2
 ```
-**11. Verify a Certificate Against a CA**
+### PKI
+
+- Verify a Certificate Against a CA**
 ```sh
 openssl verify -CAfile ca-cert.pem cert.pem
 ```
-
-**12. View speed:**
-Parallel:
-```sh
-openssl speed -seconds 5 -multi <cores> ed25519 ecdsa rsa3072 ed448
-```
-Single core:
-```sh
-openssl speed -seconds 5 ed25519 ecdsa rsa3072 ed448
-```
-13. Verify certificate:
+- Without:
 ```sh
 openssl verify -CAfile ca.crt server.crt
 ```
+
+### Performance
+- Parallel:
+```sh
+openssl speed -seconds 5 -multi <cores> ed25519 ecdsa rsa3072 ed448
+```
+-- Single core:
+```sh
+openssl speed -seconds 5 ed25519 ecdsa rsa3072 ed448
+```
+
+## References:
+- pkeyopts [here](https://docs.openssl.org/3.4/man1/openssl-genpkey/#dsa-parameter-generation-options)
