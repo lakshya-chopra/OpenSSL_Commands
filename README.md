@@ -36,27 +36,59 @@ Sample:
 ![image](https://github.com/user-attachments/assets/1961f670-c1e2-40ab-939d-5476406cf5a8)
 
 - **Example options**
-  1. RSA
+  - RSA
   ```
   rsa_keygen_bits:4096
   rsa_keygen_pubexp:65537
   ```
-  2. RSA-PSS (`rsassaPss`)
+> **Note:** OpenSSL rejects public exponents that fall outside a secure, allowed range to preserve cryptographic security.
+
+##### Error demonstrated
+```sh
+openssl genpkey \
+-algorithm RSA \
+-out rsa2.pem \
+-outform PEM \
+-pkeyopt rsa_keygen_bits:2048 \
+-pkeyopt rsa_keygen_pubexp:1024
+
+genpkey: Error generating RSA key
+4077A62F44790000:error:020000B2:rsa routines:rsa_multiprime_keygen:pub exponent out of range:../crypto/rsa/rsa_gen.c:96
+  ```
+  
+  - RSA-PSS (`rsassaPss`)
   ```
   rsa_pss_keygen_md:sha256
   rsa_pss_keygen_mgf1_md:sha256
   rsa_pss_keygen_saltlen:32
   ```
-  3. ECDSA
+  E.g.
+  ```md
+  openssl genpkey \
+  -algorithm RSA-PSS \
+  -out rsa.pem \
+  -outform PEM \
+  -pkeyopt rsa_keygen_bits:4096 \
+  -pkeyopt rsa_pss_keygen_md:sha256
+  ```
+  - ECDSA
   ```md
   ec_paramgen_curve:<curve_name>
   ```
 
 > Note: Other supported algorithms can be listed via: `openssl list -key-exchange-algorithms -signature-algorithms`
 
-- Viewing the key
+- Viewing the key:
 ```sh
 openssl pkey -in key.pem -text
+```
+Example:
+```sh
+openssl pkey -in rsa.pem -text -noout
+```
+- ASN1 Parse:
+```sh
+openssl asn1parse -in rsa.pem -i
 ```
 - Printing only the public key:
 ```sh
